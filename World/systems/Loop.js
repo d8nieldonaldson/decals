@@ -4,7 +4,7 @@ class Loop {
     constructor(camera, scene, renderer) {
         this.camera = camera;
         this.scene = scene;
-        this.render = renderer
+        this.renderer = renderer
     }
 
     start() {

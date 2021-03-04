@@ -16,7 +16,7 @@ class Resizer {
             // set the size again if a resize occurs
             setSize(container, camera, renderer);
             // perform any custom actions
-            this.onResize();
+            // this.onResize();
         });
 
 

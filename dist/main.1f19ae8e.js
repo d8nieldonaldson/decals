@@ -35616,8 +35616,6 @@ var setSize = function setSize(container, camera, renderer) {
 };
 
 var Resizer = function Resizer(container, camera, renderer) {
-  var _this = this;
-
   _classCallCheck(this, Resizer);
 
   // set initial size on load
@@ -35625,8 +35623,7 @@ var Resizer = function Resizer(container, camera, renderer) {
   window.addEventListener('resize', function () {
     // set the size again if a resize occurs
     setSize(container, camera, renderer); // perform any custom actions
-
-    _this.onResize();
+    // this.onResize();
   });
 };
 
@@ -35653,7 +35650,7 @@ var Loop = /*#__PURE__*/function () {
 
     this.camera = camera;
     this.scene = scene;
-    this.render = renderer;
+    this.renderer = renderer;
   }
 
   _createClass(Loop, [{
@@ -35712,8 +35709,6 @@ var loop;
 
 var World = /*#__PURE__*/function () {
   function World(container) {
-    var _this = this;
-
     _classCallCheck(this, World);
 
     camera = (0, _camera.createCamera)();
@@ -35725,10 +35720,6 @@ var World = /*#__PURE__*/function () {
     var light = (0, _lights.createLights)();
     scene.add(cube, light);
     var resizer = new _Resizer.Resizer(container, camera, renderer);
-
-    resizer.onResize = function () {
-      _this.render();
-    };
   }
 
   _createClass(World, [{
