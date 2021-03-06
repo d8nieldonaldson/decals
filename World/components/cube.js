@@ -3,34 +3,41 @@ import {
     MathUtils,
     Mesh,
     MeshStandardMaterial,
+    TextureLoader,
 } from 'three';
+
+function createMaterial() {
+    // create a texture loader
+    const textureLoader = new TextureLoader();
+    // load a texture
+    const texture = textureLoader.load(
+        '/assets/textures/uv-test-col.png',
+    );
+
+    // create a "standard" material using
+    // the texture we just loaded as a color map
+    const material = new MeshStandardMaterial({
+        map: texture,
+    });
+    return material;
+}
 
 function createCube() {
     const geometry = new BoxBufferGeometry(2, 2, 2);
-
-    const material = new MeshStandardMaterial({ color: 'purple' });
-
+    const material = createMaterial();
     const cube = new Mesh(geometry, material);
 
-    cube.position.x = -0.5;
-    cube.position.y = -0.1;
-    cube.position.z = 1;
+    cube.rotation.set(-0.5, -0.1, 0.8);
 
-    // equivalent to:
-    // cube.position.set(-0.5, -0.1, 1);
+    const radiansPerSecond = MathUtils.degToRad(30);
 
-    cube.scale.x = 1;
-    cube.scale.y = 1;
-    cube.scale.z = 1;
-
-    // equivalent to:
-    // cube.scale.set(1.25, 0.25, 0.5);
-
-    // to rotate using degrees, they must
-    // first be converted to radians
-    cube.rotation.x = MathUtils.degToRad(60);
-    cube.rotation.y = MathUtils.degToRad(-45);
-    cube.rotation.z = MathUtils.degToRad(-60);
+    // this method will be called once per frame
+    cube.tick = (delta) => {
+        // increase the cube's rotation each frame
+        cube.rotation.z += radiansPerSecond * delta;
+        cube.rotation.x += radiansPerSecond * delta;
+        cube.rotation.y += radiansPerSecond * delta;
+    };
 
     return cube;
 }

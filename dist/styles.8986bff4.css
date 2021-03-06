@@ -28,6 +28,9 @@ h1 {
       background to prevent flashing on load
     */
     background-color: skyblue;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 /*# sourceMappingURL=/styles.8986bff4.css.map */

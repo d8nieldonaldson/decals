@@ -35521,27 +35521,35 @@ exports.createCube = createCube;
 
 var _three = require("three");
 
+function createMaterial() {
+  // create a texture loader
+  var textureLoader = new _three.TextureLoader(); // load a texture
+
+  var texture = textureLoader.load('/assets/textures/uv-test-col.png'); // create a "standard" material using
+  // the texture we just loaded as a color map
+
+  var material = new _three.MeshStandardMaterial({
+    map: texture
+  });
+  return material;
+}
+
 function createCube() {
   var geometry = new _three.BoxBufferGeometry(2, 2, 2);
-  var material = new _three.MeshStandardMaterial({
-    color: 'purple'
-  });
+  var material = createMaterial();
   var cube = new _three.Mesh(geometry, material);
-  cube.position.x = -0.5;
-  cube.position.y = -0.1;
-  cube.position.z = 1; // equivalent to:
-  // cube.position.set(-0.5, -0.1, 1);
+  cube.rotation.set(-0.5, -0.1, 0.8);
 
-  cube.scale.x = 1;
-  cube.scale.y = 1;
-  cube.scale.z = 1; // equivalent to:
-  // cube.scale.set(1.25, 0.25, 0.5);
-  // to rotate using degrees, they must
-  // first be converted to radians
+  var radiansPerSecond = _three.MathUtils.degToRad(30); // this method will be called once per frame
 
-  cube.rotation.x = _three.MathUtils.degToRad(60);
-  cube.rotation.y = _three.MathUtils.degToRad(-45);
-  cube.rotation.z = _three.MathUtils.degToRad(-60);
+
+  cube.tick = function (delta) {
+    // increase the cube's rotation each frame
+    cube.rotation.z += radiansPerSecond * delta;
+    cube.rotation.x += radiansPerSecond * delta;
+    cube.rotation.y += radiansPerSecond * delta;
+  };
+
   return cube;
 }
 },{"three":"node_modules/three/build/three.module.js"}],"World/components/lights.js":[function(require,module,exports) {
@@ -35638,11 +35646,19 @@ exports.Loop = void 0;
 
 var _three = require("three");
 
+function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it.return != null) it.return(); } finally { if (didErr) throw err; } } }; }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+var clock = new _three.Clock();
 
 var Loop = /*#__PURE__*/function () {
   function Loop(camera, scene, renderer) {
@@ -35651,6 +35667,7 @@ var Loop = /*#__PURE__*/function () {
     this.camera = camera;
     this.scene = scene;
     this.renderer = renderer;
+    this.updatables = [];
   }
 
   _createClass(Loop, [{
@@ -35659,7 +35676,10 @@ var Loop = /*#__PURE__*/function () {
       var _this = this;
 
       this.renderer.setAnimationLoop(function () {
-        // render a frame
+        // tell every animated object to tick forward one frame
+        _this.tick(); // render a frame
+
+
         _this.renderer.render(_this.scene, _this.camera);
       });
     }
@@ -35667,6 +35687,28 @@ var Loop = /*#__PURE__*/function () {
     key: "stop",
     value: function stop() {
       this.renderer.setAnimationLoop(null);
+    }
+  }, {
+    key: "tick",
+    value: function tick() {
+      // only call the getDelta function once per frame!
+      var delta = clock.getDelta(); // console.log(
+      //     `The last frame rendered in ${delta * 1000} milliseconds`,
+      // );
+
+      var _iterator = _createForOfIteratorHelper(this.updatables),
+          _step;
+
+      try {
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var object = _step.value;
+          object.tick(delta);
+        }
+      } catch (err) {
+        _iterator.e(err);
+      } finally {
+        _iterator.f();
+      }
     }
   }]);
 
@@ -35718,8 +35760,8 @@ var World = /*#__PURE__*/function () {
     container.append(renderer.domElement);
     var cube = (0, _cube.createCube)();
     var light = (0, _lights.createLights)();
-    scene.add(cube, light);
-    var resizer = new _Resizer.Resizer(container, camera, renderer);
+    loop.updatables.push(cube);
+    scene.add(cube, light); // const resizer = new Resizer(container, camera, renderer);
   }
 
   _createClass(World, [{
@@ -35751,11 +35793,9 @@ var _World = require("./World/World.js");
 
 function main() {
   // Get a reference to the container element
-  var container = document.querySelector('#scene-container'); // 1. Create an instance of the World app
+  var container = document.querySelector('#scene-container'); // Create an instance of the World app
 
-  var world = new _World.World(container); // // 2. Render the scene
-  // world.render();
-  // 2. start the loop
+  var world = new _World.World(container); // start the loop
 
   world.start();
 }
