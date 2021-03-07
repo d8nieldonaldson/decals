@@ -29,7 +29,7 @@ class Loop {
         const delta = clock.getDelta();
 
         // console.log(
-        //     `The last frame rendered in ${delta * 1000} milliseconds`,
+        //   `The last frame rendered in ${delta * 1000} milliseconds`,
         // );
 
         for (const object of this.updatables) {

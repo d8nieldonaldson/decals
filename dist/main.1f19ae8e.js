@@ -35503,54 +35503,30 @@ exports.createCamera = createCamera;
 var _three = require("three");
 
 function createCamera() {
-  var camera = new _three.PerspectiveCamera(35, // fov = Field Of View
-  1, // aspect ratio (dummy value)
-  0.1, // near clipping plane
-  1000); // move the camera back so we can view the scene
-
-  camera.position.set(0, 0, 10);
+  var camera = new _three.PerspectiveCamera(35, 1, 0.1, 100);
+  camera.position.set(-5, 5, 7);
   return camera;
 }
-},{"three":"node_modules/three/build/three.module.js"}],"World/components/cube.js":[function(require,module,exports) {
+},{"three":"node_modules/three/build/three.module.js"}],"World/components/helpers.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.createCube = createCube;
+exports.createAxesHelper = createAxesHelper;
+exports.createGridHelper = createGridHelper;
 
 var _three = require("three");
 
-function createMaterial() {
-  // create a texture loader
-  var textureLoader = new _three.TextureLoader(); // load a texture
-
-  var texture = textureLoader.load('/assets/textures/uv-test-col.png'); // create a "standard" material using
-  // the texture we just loaded as a color map
-
-  var material = new _three.MeshStandardMaterial({
-    map: texture
-  });
-  return material;
+function createAxesHelper() {
+  var helper = new _three.AxesHelper(3);
+  helper.position.set(-3.5, 0, -3.5);
+  return helper;
 }
 
-function createCube() {
-  var geometry = new _three.BoxBufferGeometry(2, 2, 2);
-  var material = createMaterial();
-  var cube = new _three.Mesh(geometry, material);
-  cube.rotation.set(-0.5, -0.1, 0.8);
-
-  var radiansPerSecond = _three.MathUtils.degToRad(30); // this method will be called once per frame
-
-
-  cube.tick = function (delta) {
-    // increase the cube's rotation each frame
-    cube.rotation.z += radiansPerSecond * delta;
-    cube.rotation.x += radiansPerSecond * delta;
-    cube.rotation.y += radiansPerSecond * delta;
-  };
-
-  return cube;
+function createGridHelper() {
+  var helper = new _three.GridHelper(6);
+  return helper;
 }
 },{"three":"node_modules/three/build/three.module.js"}],"World/components/lights.js":[function(require,module,exports) {
 "use strict";
@@ -35562,17 +35538,9 @@ exports.createLights = createLights;
 
 var _three = require("three");
 
-// .rotation and .scale have NO effect on lights
 function createLights() {
-  // parameters color and intensity for all light objects
-  // AmbientLight usually set to less intensity than its paired DirectionalLight
-  // const ambientLight = new AmbientLight('white', 2);
-  var ambientLight = new _three.HemisphereLight('white', // bright sky color
-  'darkslategrey', // dim ground color
-  5); // Create a directional light
-
-  var mainLight = new _three.DirectionalLight('white', 8); // move the light right, up, and towards us
-
+  var ambientLight = new _three.HemisphereLight('white', 'darkslategrey', 3);
+  var mainLight = new _three.DirectionalLight('white', 2);
   mainLight.position.set(10, 10, 10);
   return {
     ambientLight: ambientLight,
@@ -35594,39 +35562,111 @@ function createScene() {
   scene.background = new _three.Color('skyblue');
   return scene;
 }
-},{"three":"node_modules/three/build/three.module.js"}],"World/systems/renderer.js":[function(require,module,exports) {
+},{"three":"node_modules/three/build/three.module.js"}],"World/components/Train/geometries.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.createRenderer = createRenderer;
+exports.createGeometries = createGeometries;
 
 var _three = require("three");
 
-function createRenderer() {
-  var renderer = new _three.WebGLRenderer({
-    antialias: true
-  }); // turn on the physically correct lighting model
+function createGeometries() {
+  var cabin = new _three.BoxBufferGeometry(2, 2.25, 1.5);
+  var nose = new _three.CylinderBufferGeometry(0.75, 0.75, 3, 12); // we can reuse a single cylinder geometry for all 4 wheels
 
-  renderer.physicallyCorrectLights = true;
-  return renderer;
+  var wheel = new _three.CylinderBufferGeometry(0.4, 0.4, 1.75, 16); // different values for the top and bottom radius creates a cone shape
+
+  var chimney = new _three.CylinderBufferGeometry(0.3, 0.1, 0.5);
+  return {
+    cabin: cabin,
+    nose: nose,
+    wheel: wheel,
+    chimney: chimney
+  };
 }
-},{"three":"node_modules/three/build/three.module.js"}],"World/systems/Loop.js":[function(require,module,exports) {
+},{"three":"node_modules/three/build/three.module.js"}],"World/components/Train/materials.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.Loop = void 0;
+exports.createMaterials = createMaterials;
 
 var _three = require("three");
 
-function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it.return != null) it.return(); } finally { if (didErr) throw err; } } }; }
+function createMaterials() {
+  var body = new _three.MeshStandardMaterial({
+    color: 'firebrick',
+    flatShading: true
+  });
+  var detail = new _three.MeshStandardMaterial({
+    color: 'darkslategray',
+    flatShading: true
+  });
+  return {
+    body: body,
+    detail: detail
+  };
+}
+},{"three":"node_modules/three/build/three.module.js"}],"World/components/Train/meshes.js":[function(require,module,exports) {
+"use strict";
 
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.createMeshes = createMeshes;
 
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+var _three = require("three");
+
+var _geometries = require("./geometries.js");
+
+var _materials = require("./materials.js");
+
+function createMeshes() {
+  var geometries = (0, _geometries.createGeometries)();
+  var materials = (0, _materials.createMaterials)();
+  var cabin = new _three.Mesh(geometries.cabin, materials.body);
+  cabin.position.set(1.5, 1.4, 0);
+  var chimney = new _three.Mesh(geometries.chimney, materials.detail);
+  chimney.position.set(-2, 1.9, 0);
+  var nose = new _three.Mesh(geometries.nose, materials.body);
+  nose.position.set(-1, 1, 0);
+  nose.rotation.z = Math.PI / 2;
+  var smallWheelRear = new _three.Mesh(geometries.wheel, materials.detail);
+  smallWheelRear.position.y = 0.5;
+  smallWheelRear.rotation.x = Math.PI / 2;
+  var smallWheelCenter = smallWheelRear.clone();
+  smallWheelCenter.position.x = -1;
+  var smallWheelFront = smallWheelRear.clone();
+  smallWheelFront.position.x = -2;
+  var bigWheel = smallWheelRear.clone();
+  bigWheel.position.set(1.5, 0.9, 0);
+  bigWheel.scale.set(2, 1.25, 2);
+  return {
+    nose: nose,
+    cabin: cabin,
+    chimney: chimney,
+    smallWheelRear: smallWheelRear,
+    smallWheelCenter: smallWheelCenter,
+    smallWheelFront: smallWheelFront,
+    bigWheel: bigWheel
+  };
+}
+},{"three":"node_modules/three/build/three.module.js","./geometries.js":"World/components/Train/geometries.js","./materials.js":"World/components/Train/materials.js"}],"World/components/Train/Train.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Train = void 0;
+
+var _three = require("three");
+
+var _meshes = require("./meshes.js");
+
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -35634,65 +35674,55 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-var clock = new _three.Clock();
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
 
-var Loop = /*#__PURE__*/function () {
-  function Loop(camera, scene, renderer) {
-    _classCallCheck(this, Loop);
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
-    this.camera = camera;
-    this.scene = scene;
-    this.renderer = renderer;
-    this.updatables = [];
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+var wheelSpeed = _three.MathUtils.degToRad(24);
+
+var Train = /*#__PURE__*/function (_Group) {
+  _inherits(Train, _Group);
+
+  var _super = _createSuper(Train);
+
+  function Train() {
+    var _this;
+
+    _classCallCheck(this, Train);
+
+    _this = _super.call(this);
+    _this.meshes = (0, _meshes.createMeshes)();
+
+    _this.add(_this.meshes.nose, _this.meshes.cabin, _this.meshes.chimney, _this.meshes.smallWheelRear, _this.meshes.smallWheelCenter, _this.meshes.smallWheelFront, _this.meshes.bigWheel);
+
+    return _this;
   }
 
-  _createClass(Loop, [{
-    key: "start",
-    value: function start() {
-      var _this = this;
-
-      this.renderer.setAnimationLoop(function () {
-        // tell every animated object to tick forward one frame
-        _this.tick(); // render a frame
-
-
-        _this.renderer.render(_this.scene, _this.camera);
-      });
-    }
-  }, {
-    key: "stop",
-    value: function stop() {
-      this.renderer.setAnimationLoop(null);
-    }
-  }, {
+  _createClass(Train, [{
     key: "tick",
-    value: function tick() {
-      // only call the getDelta function once per frame!
-      var delta = clock.getDelta(); // console.log(
-      //     `The last frame rendered in ${delta * 1000} milliseconds`,
-      // );
-
-      var _iterator = _createForOfIteratorHelper(this.updatables),
-          _step;
-
-      try {
-        for (_iterator.s(); !(_step = _iterator.n()).done;) {
-          var object = _step.value;
-          object.tick(delta);
-        }
-      } catch (err) {
-        _iterator.e(err);
-      } finally {
-        _iterator.f();
-      }
+    value: function tick(delta) {
+      this.meshes.bigWheel.rotation.y += wheelSpeed * delta;
+      this.meshes.smallWheelRear.rotation.y += wheelSpeed * delta;
+      this.meshes.smallWheelCenter.rotation.y += wheelSpeed * delta;
+      this.meshes.smallWheelFront.rotation.y += wheelSpeed * delta;
     }
   }]);
 
-  return Loop;
-}();
+  return Train;
+}(_three.Group);
 
-exports.Loop = Loop;
-},{"three":"node_modules/three/build/three.module.js"}],"node_modules/three/examples/jsm/controls/OrbitControls.js":[function(require,module,exports) {
+exports.Train = Train;
+},{"three":"node_modules/three/build/three.module.js","./meshes.js":"World/components/Train/meshes.js"}],"node_modules/three/examples/jsm/controls/OrbitControls.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -36539,14 +36569,10 @@ exports.createControls = createControls;
 
 var _OrbitControls = require("three/examples/jsm/controls/OrbitControls.js");
 
-// note: we can limit the amount of rotation, pan, et cetera
-// we may need to for the car - the undercarriage may not be important, et cetera
 function createControls(camera, canvas) {
-  var controls = new _OrbitControls.OrbitControls(camera, canvas); // damping and auto rotation require
-  // the controls to be updated each frame
-  // this.controls.autoRotate = true;
-
+  var controls = new _OrbitControls.OrbitControls(camera, canvas);
   controls.enableDamping = true;
+  controls.target.y = 1;
 
   controls.tick = function () {
     return controls.update();
@@ -36554,50 +36580,137 @@ function createControls(camera, canvas) {
 
   return controls;
 }
-},{"three/examples/jsm/controls/OrbitControls.js":"node_modules/three/examples/jsm/controls/OrbitControls.js"}],"World/components/meshGroup.js":[function(require,module,exports) {
+},{"three/examples/jsm/controls/OrbitControls.js":"node_modules/three/examples/jsm/controls/OrbitControls.js"}],"World/systems/renderer.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.createMeshGroup = createMeshGroup;
+exports.createRenderer = createRenderer;
 
 var _three = require("three");
 
-function createMeshGroup() {
-  // a group holds other objects
-  // but cannot be seen itself
-  var group = new _three.Group();
-  var geometry = new _three.SphereBufferGeometry(0.25, 16, 16);
-  var material = new _three.MeshStandardMaterial({
-    color: 'indigo'
+function createRenderer() {
+  var renderer = new _three.WebGLRenderer({
+    antialias: true
   });
-  var protoSphere = new _three.Mesh(geometry, material); // add the protoSphere to the group
-
-  group.add(protoSphere); // create twenty clones of the protoSphere
-  // and add each to the group
-
-  for (var i = 0; i < 1; i += 0.05) {
-    var sphere = protoSphere.clone(); // position the spheres on around a circle
-
-    sphere.position.x = Math.cos(2 * Math.PI * i);
-    sphere.position.y = Math.sin(2 * Math.PI * i);
-    sphere.scale.multiplyScalar(0.01 + i);
-    group.add(sphere);
-  } // every sphere inside the group will be scaled
-
-
-  group.scale.multiplyScalar(2);
-
-  var radiansPerSecond = _three.MathUtils.degToRad(30); // each frame, rotate the entire group of spheres
-
-
-  group.tick = function (delta) {
-    group.rotation.z -= delta * radiansPerSecond;
-  };
-
-  return group;
+  renderer.physicallyCorrectLights = true;
+  return renderer;
 }
+},{"three":"node_modules/three/build/three.module.js"}],"World/systems/Resizer.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Resizer = void 0;
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var setSize = function setSize(container, camera, renderer) {
+  // Set the camera's aspect ratio
+  camera.aspect = container.clientWidth / container.clientHeight; // update the camera's frustum
+
+  camera.updateProjectionMatrix(); // update the size of the renderer AND the canvas
+
+  renderer.setSize(container.clientWidth, container.clientHeight); // set the pixel ratio (for mobile devices)
+
+  renderer.setPixelRatio(window.devicePixelRatio);
+};
+
+var Resizer = function Resizer(container, camera, renderer) {
+  _classCallCheck(this, Resizer);
+
+  // set initial size on load
+  setSize(container, camera, renderer);
+  window.addEventListener('resize', function () {
+    // set the size again if a resize occurs
+    setSize(container, camera, renderer); // perform any custom actions
+    // this.onResize();
+  });
+};
+
+exports.Resizer = Resizer;
+},{}],"World/systems/Loop.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Loop = void 0;
+
+var _three = require("three");
+
+function _createForOfIteratorHelper(o, allowArrayLike) { var it; if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = o[Symbol.iterator](); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it.return != null) it.return(); } finally { if (didErr) throw err; } } }; }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+var clock = new _three.Clock();
+
+var Loop = /*#__PURE__*/function () {
+  function Loop(camera, scene, renderer) {
+    _classCallCheck(this, Loop);
+
+    this.camera = camera;
+    this.scene = scene;
+    this.renderer = renderer;
+    this.updatables = [];
+  }
+
+  _createClass(Loop, [{
+    key: "start",
+    value: function start() {
+      var _this = this;
+
+      this.renderer.setAnimationLoop(function () {
+        // tell every animated object to tick forward one frame
+        _this.tick(); // render a frame
+
+
+        _this.renderer.render(_this.scene, _this.camera);
+      });
+    }
+  }, {
+    key: "stop",
+    value: function stop() {
+      this.renderer.setAnimationLoop(null);
+    }
+  }, {
+    key: "tick",
+    value: function tick() {
+      // only call the getDelta function once per frame!
+      var delta = clock.getDelta(); // console.log(
+      //   `The last frame rendered in ${delta * 1000} milliseconds`,
+      // );
+
+      var _iterator = _createForOfIteratorHelper(this.updatables),
+          _step;
+
+      try {
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var object = _step.value;
+          object.tick(delta);
+        }
+      } catch (err) {
+        _iterator.e(err);
+      } finally {
+        _iterator.f();
+      }
+    }
+  }]);
+
+  return Loop;
+}();
+
+exports.Loop = Loop;
 },{"three":"node_modules/three/build/three.module.js"}],"World/World.js":[function(require,module,exports) {
 "use strict";
 
@@ -36608,19 +36721,21 @@ exports.World = void 0;
 
 var _camera = require("./components/camera.js");
 
-var _cube = require("./components/cube.js");
+var _helpers = require("./components/helpers.js");
 
 var _lights = require("./components/lights.js");
 
 var _scene = require("./components/scene.js");
 
-var _renderer = require("./systems/renderer.js");
-
-var _Loop = require("./systems/Loop.js");
+var _Train = require("./components/Train/Train.js");
 
 var _controls = require("./systems/controls.js");
 
-var _meshGroup = require("./components/meshGroup.js");
+var _renderer = require("./systems/renderer.js");
+
+var _Resizer = require("./systems/Resizer.js");
+
+var _Loop = require("./systems/Loop.js");
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -36628,9 +36743,9 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-var scene;
 var camera;
 var renderer;
+var scene;
 var loop;
 
 var World = /*#__PURE__*/function () {
@@ -36638,27 +36753,26 @@ var World = /*#__PURE__*/function () {
     _classCallCheck(this, World);
 
     camera = (0, _camera.createCamera)();
-    scene = (0, _scene.createScene)();
     renderer = (0, _renderer.createRenderer)();
+    scene = (0, _scene.createScene)();
     loop = new _Loop.Loop(camera, scene, renderer);
     container.append(renderer.domElement);
     var controls = (0, _controls.createControls)(camera, renderer.domElement);
-    var meshGroup = (0, _meshGroup.createMeshGroup)();
 
     var _createLights = (0, _lights.createLights)(),
         ambientLight = _createLights.ambientLight,
-        mainLight = _createLights.mainLight; // disabled mesh rotation
-    // updatables.push(cube);
+        mainLight = _createLights.mainLight;
 
-
-    loop.updatables.push(controls, meshGroup);
-    scene.add(ambientLight, mainLight, meshGroup); // const resizer = new Resizer(container, camera, renderer);
+    var train = new _Train.Train();
+    loop.updatables.push(controls, train);
+    scene.add(ambientLight, mainLight, train);
+    var resizer = new _Resizer.Resizer(container, camera, renderer);
+    scene.add((0, _helpers.createAxesHelper)(), (0, _helpers.createGridHelper)());
   }
 
   _createClass(World, [{
     key: "render",
     value: function render() {
-      // draw a single frame
       renderer.render(scene, camera);
     }
   }, {
@@ -36677,7 +36791,7 @@ var World = /*#__PURE__*/function () {
 }();
 
 exports.World = World;
-},{"./components/camera.js":"World/components/camera.js","./components/cube.js":"World/components/cube.js","./components/lights.js":"World/components/lights.js","./components/scene.js":"World/components/scene.js","./systems/renderer.js":"World/systems/renderer.js","./systems/Loop.js":"World/systems/Loop.js","./systems/controls.js":"World/systems/controls.js","./components/meshGroup.js":"World/components/meshGroup.js"}],"main.js":[function(require,module,exports) {
+},{"./components/camera.js":"World/components/camera.js","./components/helpers.js":"World/components/helpers.js","./components/lights.js":"World/components/lights.js","./components/scene.js":"World/components/scene.js","./components/Train/Train.js":"World/components/Train/Train.js","./systems/controls.js":"World/systems/controls.js","./systems/renderer.js":"World/systems/renderer.js","./systems/Resizer.js":"World/systems/Resizer.js","./systems/Loop.js":"World/systems/Loop.js"}],"main.js":[function(require,module,exports) {
 "use strict";
 
 var _World = require("./World/World.js");
