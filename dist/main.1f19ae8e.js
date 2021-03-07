@@ -35506,7 +35506,7 @@ function createCamera() {
   var camera = new _three.PerspectiveCamera(35, // fov = Field Of View
   1, // aspect ratio (dummy value)
   0.1, // near clipping plane
-  100); // move the camera back so we can view the scene
+  1000); // move the camera back so we can view the scene
 
   camera.position.set(0, 0, 10);
   return camera;
@@ -35562,12 +35562,22 @@ exports.createLights = createLights;
 
 var _three = require("three");
 
+// .rotation and .scale have NO effect on lights
 function createLights() {
-  // Create a directional light
-  var light = new _three.DirectionalLight('white', 8); // move the light right, up, and towards us
+  // parameters color and intensity for all light objects
+  // AmbientLight usually set to less intensity than its paired DirectionalLight
+  // const ambientLight = new AmbientLight('white', 2);
+  var ambientLight = new _three.HemisphereLight('white', // bright sky color
+  'darkslategrey', // dim ground color
+  5); // Create a directional light
 
-  light.position.set(-12, 10, 12);
-  return light;
+  var mainLight = new _three.DirectionalLight('white', 8); // move the light right, up, and towards us
+
+  mainLight.position.set(10, 10, 10);
+  return {
+    ambientLight: ambientLight,
+    mainLight: mainLight
+  };
 }
 },{"three":"node_modules/three/build/three.module.js"}],"World/components/scene.js":[function(require,module,exports) {
 "use strict";
@@ -36529,8 +36539,21 @@ exports.createControls = createControls;
 
 var _OrbitControls = require("three/examples/jsm/controls/OrbitControls.js");
 
-// To do...
-function createControls() {}
+// note: we can limit the amount of rotation, pan, et cetera
+// we may need to for the car - the undercarriage may not be important, et cetera
+function createControls(camera, canvas) {
+  var controls = new _OrbitControls.OrbitControls(camera, canvas); // damping and auto rotation require
+  // the controls to be updated each frame
+  // this.controls.autoRotate = true;
+
+  controls.enableDamping = true;
+
+  controls.tick = function () {
+    return controls.update();
+  };
+
+  return controls;
+}
 },{"three/examples/jsm/controls/OrbitControls.js":"node_modules/three/examples/jsm/controls/OrbitControls.js"}],"World/World.js":[function(require,module,exports) {
 "use strict";
 
@@ -36573,12 +36596,17 @@ var World = /*#__PURE__*/function () {
     renderer = (0, _renderer.createRenderer)();
     loop = new _Loop.Loop(camera, scene, renderer);
     container.append(renderer.domElement);
-    var controls = (0, _controls.createControls)();
+    var controls = (0, _controls.createControls)(camera, renderer.domElement);
     var cube = (0, _cube.createCube)();
-    var light = (0, _lights.createLights)(); // disabled mesh rotation
+
+    var _createLights = (0, _lights.createLights)(),
+        ambientLight = _createLights.ambientLight,
+        mainLight = _createLights.mainLight; // disabled mesh rotation
     // updatables.push(cube);
 
-    scene.add(cube, light); // const resizer = new Resizer(container, camera, renderer);
+
+    loop.updatables.push(controls);
+    scene.add(ambientLight, mainLight, cube); // const resizer = new Resizer(container, camera, renderer);
   }
 
   _createClass(World, [{
