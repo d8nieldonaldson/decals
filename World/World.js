@@ -7,6 +7,7 @@ import { createRenderer } from './systems/renderer.js';
 // import { Resizer } from './systems/Resizer.js';
 import { Loop } from './systems/Loop.js';
 import { createControls } from './systems/controls.js';
+import { createMeshGroup } from './components/meshGroup.js';
 
 let scene;
 let camera;
@@ -21,14 +22,13 @@ class World {
         loop = new Loop(camera, scene, renderer);
         container.append(renderer.domElement);
         const controls = createControls(camera, renderer.domElement);
-        const cube = createCube();
+        const meshGroup = createMeshGroup();
         const { ambientLight, mainLight } = createLights();
         // disabled mesh rotation
         // updatables.push(cube);
 
-        loop.updatables.push(controls);
-
-        scene.add(ambientLight, mainLight, cube);
+        loop.updatables.push(controls, meshGroup);
+        scene.add(ambientLight, mainLight, meshGroup);
 
         // const resizer = new Resizer(container, camera, renderer);
 

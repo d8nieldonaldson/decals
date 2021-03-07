@@ -36554,7 +36554,51 @@ function createControls(camera, canvas) {
 
   return controls;
 }
-},{"three/examples/jsm/controls/OrbitControls.js":"node_modules/three/examples/jsm/controls/OrbitControls.js"}],"World/World.js":[function(require,module,exports) {
+},{"three/examples/jsm/controls/OrbitControls.js":"node_modules/three/examples/jsm/controls/OrbitControls.js"}],"World/components/meshGroup.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.createMeshGroup = createMeshGroup;
+
+var _three = require("three");
+
+function createMeshGroup() {
+  // a group holds other objects
+  // but cannot be seen itself
+  var group = new _three.Group();
+  var geometry = new _three.SphereBufferGeometry(0.25, 16, 16);
+  var material = new _three.MeshStandardMaterial({
+    color: 'indigo'
+  });
+  var protoSphere = new _three.Mesh(geometry, material); // add the protoSphere to the group
+
+  group.add(protoSphere); // create twenty clones of the protoSphere
+  // and add each to the group
+
+  for (var i = 0; i < 1; i += 0.05) {
+    var sphere = protoSphere.clone(); // position the spheres on around a circle
+
+    sphere.position.x = Math.cos(2 * Math.PI * i);
+    sphere.position.y = Math.sin(2 * Math.PI * i);
+    sphere.scale.multiplyScalar(0.01 + i);
+    group.add(sphere);
+  } // every sphere inside the group will be scaled
+
+
+  group.scale.multiplyScalar(2);
+
+  var radiansPerSecond = _three.MathUtils.degToRad(30); // each frame, rotate the entire group of spheres
+
+
+  group.tick = function (delta) {
+    group.rotation.z -= delta * radiansPerSecond;
+  };
+
+  return group;
+}
+},{"three":"node_modules/three/build/three.module.js"}],"World/World.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -36575,6 +36619,8 @@ var _renderer = require("./systems/renderer.js");
 var _Loop = require("./systems/Loop.js");
 
 var _controls = require("./systems/controls.js");
+
+var _meshGroup = require("./components/meshGroup.js");
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -36597,7 +36643,7 @@ var World = /*#__PURE__*/function () {
     loop = new _Loop.Loop(camera, scene, renderer);
     container.append(renderer.domElement);
     var controls = (0, _controls.createControls)(camera, renderer.domElement);
-    var cube = (0, _cube.createCube)();
+    var meshGroup = (0, _meshGroup.createMeshGroup)();
 
     var _createLights = (0, _lights.createLights)(),
         ambientLight = _createLights.ambientLight,
@@ -36605,8 +36651,8 @@ var World = /*#__PURE__*/function () {
     // updatables.push(cube);
 
 
-    loop.updatables.push(controls);
-    scene.add(ambientLight, mainLight, cube); // const resizer = new Resizer(container, camera, renderer);
+    loop.updatables.push(controls, meshGroup);
+    scene.add(ambientLight, mainLight, meshGroup); // const resizer = new Resizer(container, camera, renderer);
   }
 
   _createClass(World, [{
@@ -36631,7 +36677,7 @@ var World = /*#__PURE__*/function () {
 }();
 
 exports.World = World;
-},{"./components/camera.js":"World/components/camera.js","./components/cube.js":"World/components/cube.js","./components/lights.js":"World/components/lights.js","./components/scene.js":"World/components/scene.js","./systems/renderer.js":"World/systems/renderer.js","./systems/Loop.js":"World/systems/Loop.js","./systems/controls.js":"World/systems/controls.js"}],"main.js":[function(require,module,exports) {
+},{"./components/camera.js":"World/components/camera.js","./components/cube.js":"World/components/cube.js","./components/lights.js":"World/components/lights.js","./components/scene.js":"World/components/scene.js","./systems/renderer.js":"World/systems/renderer.js","./systems/Loop.js":"World/systems/Loop.js","./systems/controls.js":"World/systems/controls.js","./components/meshGroup.js":"World/components/meshGroup.js"}],"main.js":[function(require,module,exports) {
 "use strict";
 
 var _World = require("./World/World.js");
